@@ -24,8 +24,7 @@ public class IndexConfig {
 	public static final String MIN_SEGMENT_REQUEST = "minSegmentRequest";
 	public static final String NUMBER_OF_SEGMENTS = "numberOfSegments";
 	public static final String INDEX_NAME = "indexName";
-	public static final String IDLE_TIME_WITHOUT_COMMIT = "idleTimeWithoutCommit";
-	public static final String SEGMENT_COMMIT_INTERVAL = "segmentCommitInterval";
+	public static final String COMMIT_INTERVAL = "commitInterval";
 	public static final String SEGMENT_QUERY_CACHE_SIZE = "segmentQueryCacheSize";
 	public static final String SEGMENT_QUERY_CACHE_MAX_AMOUNT = "segmentQueryCacheMaxAmount";
 	public static final String STORE_DOCUMENT_IN_MONGO = "storeDocumentInMongo";
@@ -49,8 +48,7 @@ public class IndexConfig {
 	private int minSegmentRequest;
 	private int numberOfSegments;
 	private String indexName;
-	private int idleTimeWithoutCommit;
-	private int segmentCommitInterval;
+	private int commitInterval;
 	private int segmentQueryCacheSize;
 	private int segmentQueryCacheMaxAmount;
 	private boolean storeDocumentInIndex;
@@ -138,8 +136,7 @@ public class IndexConfig {
 		indexConfig.minSegmentRequest = (int) settings.get(MIN_SEGMENT_REQUEST);
 		indexConfig.numberOfSegments = (int) settings.get(NUMBER_OF_SEGMENTS);
 		indexConfig.indexName = (String) settings.get(INDEX_NAME);
-		indexConfig.idleTimeWithoutCommit = (int) settings.get(IDLE_TIME_WITHOUT_COMMIT);
-		indexConfig.segmentCommitInterval = (int) settings.get(SEGMENT_COMMIT_INTERVAL);
+		indexConfig.commitInterval = (int) settings.get(COMMIT_INTERVAL);
 		indexConfig.segmentTolerance = (double) settings.get(SEGMENT_TOLERANCE);
 		indexConfig.storeDocumentInMongo = (boolean) settings.get(STORE_DOCUMENT_IN_MONGO);
 		indexConfig.storeDocumentInIndex = (boolean) settings.get(STORE_DOCUMENT_IN_INDEX);
@@ -195,8 +192,7 @@ public class IndexConfig {
 		this.applyUncommittedDeletes = indexSettings.getApplyUncommittedDeletes();
 		this.requestFactor = indexSettings.getRequestFactor();
 		this.minSegmentRequest = indexSettings.getMinSegmentRequest();
-		this.segmentCommitInterval = indexSettings.getSegmentCommitInterval();
-		this.idleTimeWithoutCommit = indexSettings.getIdleTimeWithoutCommit();
+		this.commitInterval = indexSettings.getCommitInterval();
 		this.segmentTolerance = indexSettings.getSegmentTolerance();
 		this.segmentQueryCacheSize = indexSettings.getSegmentQueryCacheSize();
 		this.segmentQueryCacheMaxAmount = indexSettings.getSegmentQueryCacheMaxAmount();
@@ -222,8 +218,7 @@ public class IndexConfig {
 		isb.setApplyUncommittedDeletes(applyUncommittedDeletes);
 		isb.setRequestFactor(requestFactor);
 		isb.setMinSegmentRequest(minSegmentRequest);
-		isb.setSegmentCommitInterval(segmentCommitInterval);
-		isb.setIdleTimeWithoutCommit(idleTimeWithoutCommit);
+		isb.setCommitInterval(commitInterval);
 		isb.setSegmentTolerance(segmentTolerance);
 		isb.addAllFieldConfig(fieldConfigMap.values());
 		isb.setSegmentQueryCacheSize(segmentQueryCacheSize);
@@ -308,12 +303,8 @@ public class IndexConfig {
 	}
 
 
-	public int getIdleTimeWithoutCommit() {
-		return idleTimeWithoutCommit;
-	}
-
-	public int getSegmentCommitInterval() {
-		return segmentCommitInterval;
+	public int getCommitInterval() {
+		return commitInterval;
 	}
 
 	public double getSegmentTolerance() {
@@ -344,8 +335,7 @@ public class IndexConfig {
 		dbObject.put(MIN_SEGMENT_REQUEST, minSegmentRequest);
 		dbObject.put(NUMBER_OF_SEGMENTS, numberOfSegments);
 		dbObject.put(INDEX_NAME, indexName);
-		dbObject.put(IDLE_TIME_WITHOUT_COMMIT, idleTimeWithoutCommit);
-		dbObject.put(SEGMENT_COMMIT_INTERVAL, segmentCommitInterval);
+		dbObject.put(COMMIT_INTERVAL, commitInterval);
 		dbObject.put(SEGMENT_TOLERANCE, segmentTolerance);
 		dbObject.put(SEGMENT_QUERY_CACHE_SIZE, segmentQueryCacheSize);
 		dbObject.put(SEGMENT_QUERY_CACHE_MAX_AMOUNT, segmentQueryCacheMaxAmount);
@@ -406,8 +396,7 @@ public class IndexConfig {
 				", minSegmentRequest=" + minSegmentRequest +
 				", numberOfSegments=" + numberOfSegments +
 				", indexName='" + indexName + '\'' +
-				", idleTimeWithoutCommit=" + idleTimeWithoutCommit +
-				", segmentCommitInterval=" + segmentCommitInterval +
+				", commitInterval=" + commitInterval +
 				", segmentQueryCacheSize=" + segmentQueryCacheSize +
 				", segmentQueryCacheMaxAmount=" + segmentQueryCacheMaxAmount +
 				", storeDocumentInIndex=" + storeDocumentInIndex +

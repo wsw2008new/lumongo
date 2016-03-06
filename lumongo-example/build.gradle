@@ -46,6 +46,8 @@ dependencies {
 	//for twitter
 	compile 'org.twitter4j:twitter4j-core:[3.0,)'
 	compile 'org.twitter4j:twitter4j-stream:[3.0,)'
+
+	compile 'com.lexicalintelligence:lexicalj:0.5-SNAPSHOT'
 }
 
 

@@ -14,8 +14,7 @@ public class IndexConfig {
 	private Integer minSegmentRequest;
 	private Integer numberOfSegments;
 	private String indexName;
-	private Integer idleTimeWithoutCommit;
-	private Integer segmentCommitInterval;
+	private Integer commitInterval;
 	private Double segmentTolerance;
 	private Integer segmentQueryCacheSize;
 	private Integer segmentQueryCacheMaxAmount;
@@ -37,81 +36,64 @@ public class IndexConfig {
 		return defaultSearchField;
 	}
 
-	public IndexConfig setDefaultSearchField(String defaultSearchField) {
+	public void setDefaultSearchField(String defaultSearchField) {
 		this.defaultSearchField = defaultSearchField;
-		return this;
 	}
 
-	public boolean getApplyUncommittedDeletes() {
+	public Boolean getApplyUncommittedDeletes() {
 		return applyUncommittedDeletes;
 	}
 
-	public IndexConfig setApplyUncommittedDeletes(boolean applyUncommittedDeletes) {
+	public void setApplyUncommittedDeletes(Boolean applyUncommittedDeletes) {
 		this.applyUncommittedDeletes = applyUncommittedDeletes;
-		return this;
 	}
 
-	public double getRequestFactor() {
+	public Double getRequestFactor() {
 		return requestFactor;
 	}
 
-	public IndexConfig setRequestFactor(double requestFactor) {
+	public void setRequestFactor(Double requestFactor) {
 		this.requestFactor = requestFactor;
-		return this;
 	}
 
-	public int getMinSegmentRequest() {
+	public Integer getMinSegmentRequest() {
 		return minSegmentRequest;
 	}
 
-	public IndexConfig setMinSegmentRequest(int minSegmentRequest) {
+	public void setMinSegmentRequest(Integer minSegmentRequest) {
 		this.minSegmentRequest = minSegmentRequest;
-		return this;
 	}
 
-	public int getNumberOfSegments() {
+	public Integer getNumberOfSegments() {
 		return numberOfSegments;
 	}
 
-	public IndexConfig setNumberOfSegments(int numberOfSegments) {
+	public void setNumberOfSegments(Integer numberOfSegments) {
 		this.numberOfSegments = numberOfSegments;
-		return this;
 	}
 
 	public String getIndexName() {
 		return indexName;
 	}
 
-	public IndexConfig setIndexName(String indexName) {
+	public void setIndexName(String indexName) {
 		this.indexName = indexName;
-		return this;
 	}
 
-	public int getIdleTimeWithoutCommit() {
-		return idleTimeWithoutCommit;
+	public Integer getCommitInterval() {
+		return commitInterval;
 	}
 
-	public IndexConfig setIdleTimeWithoutCommit(int idleTimeWithoutCommit) {
-		this.idleTimeWithoutCommit = idleTimeWithoutCommit;
-		return this;
+	public void setCommitInterval(Integer commitInterval) {
+		this.commitInterval = commitInterval;
 	}
 
-	public int getSegmentCommitInterval() {
-		return segmentCommitInterval;
-	}
-
-	public IndexConfig setSegmentCommitInterval(int segmentCommitInterval) {
-		this.segmentCommitInterval = segmentCommitInterval;
-		return this;
-	}
-
-	public double getSegmentTolerance() {
+	public Double getSegmentTolerance() {
 		return segmentTolerance;
 	}
 
-	public IndexConfig setSegmentTolerance(double segmentTolerance) {
+	public void setSegmentTolerance(Double segmentTolerance) {
 		this.segmentTolerance = segmentTolerance;
-		return this;
 	}
 
 	public Integer getSegmentQueryCacheSize() {
@@ -162,6 +144,14 @@ public class IndexConfig {
 		this.storeDocumentInIndex = storeDocumentInIndex;
 	}
 
+	public TreeMap<String, FieldConfig> getFieldMap() {
+		return fieldMap;
+	}
+
+	public void setFieldMap(TreeMap<String, FieldConfig> fieldMap) {
+		this.fieldMap = fieldMap;
+	}
+
 	public IndexSettings getIndexSettings() {
 		IndexSettings.Builder isb = IndexSettings.newBuilder();
 		if (defaultSearchField != null) {
@@ -177,11 +167,8 @@ public class IndexConfig {
 			isb.setMinSegmentRequest(minSegmentRequest);
 		}
 
-		if (segmentCommitInterval != null) {
-			isb.setSegmentCommitInterval(segmentCommitInterval);
-		}
-		if (idleTimeWithoutCommit != null) {
-			isb.setIdleTimeWithoutCommit(idleTimeWithoutCommit);
+		if (commitInterval != null) {
+			isb.setCommitInterval(commitInterval);
 		}
 		if (segmentTolerance != null) {
 			isb.setSegmentTolerance(segmentTolerance);
@@ -215,8 +202,7 @@ public class IndexConfig {
 		this.applyUncommittedDeletes = indexSettings.getApplyUncommittedDeletes();
 		this.requestFactor = indexSettings.getRequestFactor();
 		this.minSegmentRequest = indexSettings.getMinSegmentRequest();
-		this.segmentCommitInterval = indexSettings.getSegmentCommitInterval();
-		this.idleTimeWithoutCommit = indexSettings.getIdleTimeWithoutCommit();
+		this.commitInterval = indexSettings.getCommitInterval();
 		this.segmentTolerance = indexSettings.getSegmentTolerance();
 		this.segmentQueryCacheSize = indexSettings.getSegmentQueryCacheSize();
 		this.segmentQueryCacheMaxAmount = indexSettings.getSegmentQueryCacheMaxAmount();

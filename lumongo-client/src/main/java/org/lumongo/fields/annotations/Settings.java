@@ -22,9 +22,7 @@ public @interface Settings {
 	
 	int minSeqmentRequest() default 2;
 	
-	int idleTimeWithoutCommit() default 30;
-	
-	int segmentCommitInterval() default 3200;
+	int commitInterval() default 60;
 
 	double segmentTolerance() default 0.05;
 

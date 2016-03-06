@@ -88,7 +88,7 @@ public class LumongoSegment {
 			"unexpected docvalues type NONE for field '(.*)' \\(expected one of \\[SORTED, SORTED_SET\\]\\)\\. Use UninvertingReader or index with docvalues\\.");
 	private final int segmentNumber;
 	private final IndexConfig indexConfig;
-	private final AtomicLong counter;
+
 	private final Set<String> fetchSet;
 	private final Set<String> fetchSetWithMeta;
 	private final Set<String> fetchSetWithDocument;
@@ -96,8 +96,8 @@ public class LumongoSegment {
 	private final DocumentStorage documentStorage;
 	private IndexWriter indexWriter;
 	private DirectoryReader directoryReader;
-	private Long lastCommit;
-	private Long lastChange;
+	private long lastCommit;
+	private long lastChange;
 	private String indexName;
 	private QueryResultCache queryResultCache;
 	private FacetsConfig facetsConfig;
@@ -126,9 +126,8 @@ public class LumongoSegment {
 				Arrays.asList(LumongoConstants.ID_FIELD, LumongoConstants.TIMESTAMP_FIELD, LumongoConstants.STORED_META_FIELD,
 						LumongoConstants.STORED_DOC_FIELD)));
 
-		this.counter = new AtomicLong();
-		this.lastCommit = null;
-		this.lastChange = null;
+		this.lastChange = System.currentTimeMillis();
+		this.lastCommit = lastChange + 1;
 		this.indexName = indexConfig.getIndexName();
 
 	}
@@ -254,8 +253,6 @@ public class LumongoSegment {
 
 				q = booleanQuery.build();
 			}
-
-
 
 			IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
 
@@ -637,16 +634,6 @@ public class LumongoSegment {
 		return null;
 	}
 
-	private void possibleCommit() throws IOException {
-		lastChange = System.currentTimeMillis();
-
-		long count = counter.incrementAndGet();
-		if ((count % indexConfig.getSegmentCommitInterval()) == 0) {
-			forceCommit();
-		}
-
-	}
-
 	public void forceCommit() throws IOException {
 		long currentTime = System.currentTimeMillis();
 
@@ -656,21 +643,15 @@ public class LumongoSegment {
 
 	}
 
-	public void doCommit() throws IOException {
+	public void maybeCommit() throws IOException {
 
-		long currentTime = System.currentTimeMillis();
-
-		Long lastCh = lastChange;
-		// if changes since started
-
-		if (lastCh != null) {
-			if ((currentTime - lastCh) > (indexConfig.getIdleTimeWithoutCommit() * 1000)) {
-				if ((lastCommit == null) || (lastCh > lastCommit)) {
-					log.info("Flushing segment <" + segmentNumber + "> for index <" + indexName + ">");
-					forceCommit();
-				}
+		if ((System.currentTimeMillis() - lastCommit) > (indexConfig.getCommitInterval() * 1000)) {
+			if ((lastChange > lastCommit)) {
+				log.info("Committing segment <" + segmentNumber + "> for index <" + indexName + ">");
+				forceCommit();
 			}
 		}
+
 	}
 
 	public void close() throws IOException {
@@ -761,7 +742,7 @@ public class LumongoSegment {
 
 		indexWriter.updateDocument(term, d);
 
-		possibleCommit();
+		lastChange = System.currentTimeMillis();
 	}
 
 	private void handleSortForStoredField(Document d, String storedFieldName, FieldConfig fc, Object o) {
@@ -890,13 +871,13 @@ public class LumongoSegment {
 	public void deleteDocument(String uniqueId) throws Exception {
 		Term term = new Term(LumongoConstants.ID_FIELD, uniqueId);
 		indexWriter.deleteDocuments(term);
-		possibleCommit();
+		lastChange = System.currentTimeMillis();
 
 	}
 
 	public void optimize() throws IOException {
-		lastChange = System.currentTimeMillis();
 		indexWriter.forceMerge(1);
+		lastChange = System.currentTimeMillis();
 		forceCommit();
 	}
 

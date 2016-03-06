@@ -10,13 +10,13 @@ import org.lumongo.fields.annotations.Sorted;
 import org.lumongo.fields.annotations.UniqueId;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 @Settings(
-        indexName = "medlineBoth",
-        numberOfSegments = 1,
-        segmentCommitInterval = 50000,
+        indexName = "medline",
+        numberOfSegments = 4,
         storeDocumentInIndex = true,
         storeDocumentInMongo = true)
 public class MedlineDocument {
@@ -78,7 +78,6 @@ public class MedlineDocument {
     @Faceted
     @Indexed(
             analyzer = LMAnalyzer.STANDARD)
-    @Indexed(analyzer = LMAnalyzer.LC_KEYWORD, fieldName = "authorsExact")
     private List<String> authors;
 
     @Indexed(
@@ -231,6 +230,4 @@ public class MedlineDocument {
                 ", citation='" + citation + '\'' +
                 '}';
     }
-
-
 }

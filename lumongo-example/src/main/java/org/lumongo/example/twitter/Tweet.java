@@ -12,8 +12,7 @@ import java.util.Date;
 
 @Settings(
 				indexName = Tweet.INDEX_NAME,
-				numberOfSegments = 4,
-				segmentCommitInterval = 6000)
+				numberOfSegments = 4)
 public class Tweet {
 	
 	public static final String INDEX_NAME = "twitter";

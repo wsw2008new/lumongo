@@ -158,10 +158,7 @@ public class LumongoIndex implements IndexSegmentInterface {
 
 			@Override
 			public void run() {
-				if (LumongoIndex.this.indexConfig.getIdleTimeWithoutCommit() != 0) {
-					doCommit(false);
-				}
-
+				doCommit(false);
 			}
 
 		};
@@ -202,7 +199,7 @@ public class LumongoIndex implements IndexSegmentInterface {
 						segment.forceCommit();
 					}
 					else {
-						segment.doCommit();
+						segment.maybeCommit();
 					}
 				}
 				catch (Exception e) {
@@ -364,9 +361,8 @@ public class LumongoIndex implements IndexSegmentInterface {
 
 		IndexWriterConfig config = new IndexWriterConfig(lumongoAnalyzerFactory.getAnalyzer());
 
-		//use flush interval to flush
 		config.setMaxBufferedDocs(Integer.MAX_VALUE);
-		config.setRAMBufferSizeMB(IndexWriterConfig.DISABLE_AUTO_FLUSH);
+		config.setRAMBufferSizeMB(32);
 
 		NRTCachingDirectory nrtCachingDirectory = new NRTCachingDirectory(dd, 8, 48);
 

@@ -161,8 +161,7 @@ message IndexSettings {
 	optional bool applyUncommittedDeletes = 3 [default = true];
 	optional double requestFactor = 4 [default = 2.0];
 	optional uint32 minSegmentRequest = 5 [default = 2];
-	optional uint32 idleTimeWithoutCommit = 6 [default = 30];
-	optional uint32 segmentCommitInterval = 7 [default = 3200];
+	optional uint32 commitInterval = 6 [default = 30];
 	optional double segmentTolerance = 9 [default = 0.05];
 	optional uint32 segmentQueryCacheSize = 11 [default = 512];
 	optional uint32 segmentQueryCacheMaxAmount = 12 [default = 256];

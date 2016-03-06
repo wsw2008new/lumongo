@@ -11,8 +11,7 @@ import java.util.Date;
 
 @Settings(
 				indexName = "wikipedia",
-				numberOfSegments = 16,
-				segmentCommitInterval = 6000)
+				numberOfSegments = 16)
 public class Article {
 	
 	public Article() {
