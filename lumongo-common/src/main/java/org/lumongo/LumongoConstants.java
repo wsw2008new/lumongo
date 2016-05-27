@@ -51,6 +51,7 @@ public class LumongoConstants {
 	public static final String DISMAX= "dismax";
 	public static final String DISMAX_TIE = "dismaxTie";
 	public static final String SIMILARITY = "sim";
+	public static final String TYPE = "type";
 	
 	//General
 	public static final String UTF8 = "UTF-8";

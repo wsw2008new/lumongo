@@ -1,7 +1,6 @@
 package org.lumongo.server.rest;
 
 import com.cedarsoftware.util.io.JsonWriter;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.mongodb.util.JSONSerializers;
 import org.apache.log4j.Logger;
@@ -24,6 +23,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Date;
 import java.util.List;
 
 @Path(LumongoConstants.QUERY_URL)
@@ -38,7 +38,7 @@ public class QueryResource {
 	}
 
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON + ";charset=utf-8" })
+	@Produces({ MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.TEXT_PLAIN + ";charset=utf-8" })
 	public Response get(@QueryParam(LumongoConstants.INDEX) List<String> indexName, @QueryParam(LumongoConstants.QUERY) String query,
 			@QueryParam(LumongoConstants.QUERY_FIELD) List<String> queryFields, @QueryParam(LumongoConstants.FILTER_QUERY) List<String> filterQueries,
 			@QueryParam(LumongoConstants.FILTER_QUERY_JSON) List<String> filterJsonQueries, @QueryParam(LumongoConstants.FIELDS) List<String> fields,
@@ -47,7 +47,40 @@ public class QueryResource {
 			@QueryParam(LumongoConstants.DEFAULT_OP) String defaultOperator, @QueryParam(LumongoConstants.SORT) List<String> sort,
 			@QueryParam(LumongoConstants.PRETTY) boolean pretty, @QueryParam(LumongoConstants.COMPUTE_FACET_ERROR) boolean computeFacetError,
 			@QueryParam(LumongoConstants.DISMAX) Boolean dismax, @QueryParam(LumongoConstants.DISMAX_TIE) Float dismaxTie,
-			@QueryParam(LumongoConstants.MIN_MATCH) Integer mm, @QueryParam(LumongoConstants.SIMILARITY) List<String> similarity) {
+			@QueryParam(LumongoConstants.MIN_MATCH) Integer mm, @QueryParam(LumongoConstants.SIMILARITY) List<String> similarity,
+			@QueryParam(LumongoConstants.TYPE) String type) {
+
+		try {
+			QueryRequest.Builder qrBuilder = generateQueryBuilder(indexName, query, queryFields, filterQueries, filterJsonQueries, fields, fetch, rows, facet,
+					drillDowns, defaultOperator, sort, computeFacetError, dismax, dismaxTie, mm, similarity);
+
+			QueryResponse qr = indexManager.query(qrBuilder.build());
+
+			String response;
+			if ("csv".equalsIgnoreCase(type) && fields != null && !fields.isEmpty()) {
+				response = getCSVResponse(fields, qr);
+			}
+			else {
+				response = getStandardResponse(qr);
+
+				if (pretty) {
+					response = JsonWriter.formatJson(response);
+				}
+			}
+
+			return Response.status(LumongoConstants.SUCCESS).entity(response).build();
+
+		}
+		catch (Exception e) {
+			log.error(e.getClass().getSimpleName() + ":", e);
+			return Response.status(LumongoConstants.INTERNAL_ERROR).entity(e.getClass().getSimpleName() + ":" + e.getMessage()).build();
+		}
+
+	}
+
+	private QueryRequest.Builder generateQueryBuilder(List<String> indexName, String query, List<String> queryFields, List<String> filterQueries,
+			List<String> filterJsonQueries, List<String> fields, Boolean fetch, int rows, List<String> facet, List<String> drillDowns, String defaultOperator,
+			List<String> sort, boolean computeFacetError, Boolean dismax, Float dismaxTie, Integer mm, List<String> similarity) throws Exception {
 
 		QueryRequest.Builder qrBuilder = QueryRequest.newBuilder().addAllIndex(indexName);
 		if (query != null && !query.isEmpty()) {
@@ -124,14 +157,9 @@ public class QueryResource {
 
 		if (filterJsonQueries != null) {
 			for (String filterJsonQuery : filterJsonQueries) {
-				try {
-					Lumongo.Query.Builder filterQueryBuilder = Lumongo.Query.newBuilder();
-					JsonFormat.parser().merge(filterJsonQuery, filterQueryBuilder);
-					qrBuilder.addFilterQuery(filterQueryBuilder);
-				}
-				catch (InvalidProtocolBufferException e) {
-					return Response.status(LumongoConstants.INTERNAL_ERROR).entity(e.getClass().getSimpleName() + ":" + e.getMessage()).build();
-				}
+				Lumongo.Query.Builder filterQueryBuilder = Lumongo.Query.newBuilder();
+				JsonFormat.parser().merge(filterJsonQuery, filterQueryBuilder);
+				qrBuilder.addFilterQuery(filterQueryBuilder);
 			}
 		}
 
@@ -213,22 +241,43 @@ public class QueryResource {
 		}
 		qrBuilder.setSortRequest(sortRequest);
 
-		try {
-			QueryResponse qr = indexManager.query(qrBuilder.build());
+		return qrBuilder;
+	}
 
-			String response = getStandardResponse(qr);
+	private String getCSVResponse(List<String> fields, QueryResponse qr) {
+		StringBuilder responseBuilder = new StringBuilder();
 
-			if (pretty) {
-				response = JsonWriter.formatJson(response);
+		// headers
+		fields.stream().filter(field -> !field.startsWith("-")).forEach(field -> responseBuilder.append(field).append(","));
+		responseBuilder.append("\n");
+
+		// records
+		qr.getResultsList().stream().filter(Lumongo.ScoredResult::hasResultDocument).forEach(sr -> {
+			Document document = LumongoUtil.resultDocumentToMongoDocument(sr.getResultDocument());
+
+			for (String field : fields) {
+				Object obj = document.get(field);
+				if (obj != null) {
+					if (obj instanceof List) {
+						// TODO format lists in any way?
+					}
+					else if (obj instanceof Date) {
+						// TODO format dates?
+					}
+					else {
+						String value = (String) obj;
+						value = value.replaceAll("\n", " ").replace("\"", "\"\"");
+						value = "\"" + value + "\"";
+						responseBuilder.append(value).append(",");
+					}
+				}
+
 			}
 
-			return Response.status(LumongoConstants.SUCCESS).entity(response).build();
-		}
-		catch (Exception e) {
-			log.error(e.getClass().getSimpleName() + ":", e);
-			return Response.status(LumongoConstants.INTERNAL_ERROR).entity(e.getClass().getSimpleName() + ":" + e.getMessage()).build();
-		}
+			responseBuilder.append("\n");
+		});
 
+		return responseBuilder.toString();
 	}
 
 	private String getStandardResponse(QueryResponse qr) {
