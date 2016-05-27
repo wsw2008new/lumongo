@@ -247,14 +247,16 @@ public class QueryResource {
 	private String getCSVResponse(List<String> fields, QueryResponse qr) {
 		StringBuilder responseBuilder = new StringBuilder();
 
-		// headers
-		fields.stream().filter(field -> !field.startsWith("-")).forEach(field -> responseBuilder.append(field).append(","));
-		responseBuilder.append("\n");
+		// headersBuilder
+		StringBuilder headersBuilder = new StringBuilder();
+		fields.stream().filter(field -> !field.startsWith("-")).forEach(field -> headersBuilder.append(field).append(","));
+		responseBuilder.append(headersBuilder.toString().replaceFirst(",$", "\n"));
 
 		// records
 		qr.getResultsList().stream().filter(Lumongo.ScoredResult::hasResultDocument).forEach(sr -> {
 			Document document = LumongoUtil.resultDocumentToMongoDocument(sr.getResultDocument());
 
+			StringBuilder recordBuilder = new StringBuilder();
 			for (String field : fields) {
 				Object obj = document.get(field);
 				if (obj != null) {
@@ -264,17 +266,20 @@ public class QueryResource {
 					else if (obj instanceof Date) {
 						// TODO format dates?
 					}
+					else if (obj instanceof Number) {
+						// TODO format numbers?
+					}
 					else {
 						String value = (String) obj;
 						value = value.replaceAll("\n", " ").replace("\"", "\"\"");
 						value = "\"" + value + "\"";
-						responseBuilder.append(value).append(",");
+						recordBuilder.append(value).append(",");
 					}
 				}
 
 			}
 
-			responseBuilder.append("\n");
+			responseBuilder.append(recordBuilder.toString().replaceFirst(",$", "\n"));
 		});
 
 		return responseBuilder.toString();
